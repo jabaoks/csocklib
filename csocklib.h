@@ -8,11 +8,20 @@
 #ifndef CSOCKLIB_H_
 #define CSOCKLIB_H_
 
-typedef int (*FPTR)(void *, char *, int len);
+/*
+ * Callback function pointer like follows:
+ * int on_read(void **ptr, char *buf, int len) {
+ * 		csock_close(ptr);
+ * 		return 0;
+ * }
+ * parameter ptr points to internal data to pass to csock_write() or csock_close()
+ * parameter *ptr points to user context data
+ */
+typedef int (*FPTR)(void **ptr, char *, int len);
 
 /*
  * initializes and returns pointer to library instance
- * data_len is user context data returned in on_read, on_write, on_error hooks
+ * data_len is user context data returned in on_read() callback
  * user context data is separate for each opened socket
  * */
 void *csock_init(int data_len);
@@ -28,6 +37,14 @@ void csock_release(void *lib_data);
  * sends broadcast message to all opened sockets
  * */
 int csock_broadcast(void *lib_data, char *, int len);
+/*
+ * write data to opened socket
+ * */
+int csock_write(void *ptr, char *, int len);
+/*
+ * close socket
+ * */
+void csock_close(void *ptr);
 /*
  * library prints debug information like printf
  * */
