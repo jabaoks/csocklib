@@ -41,7 +41,6 @@ struct CSOCK {
 
 static int csock_loop(void *lib_data);
 static int csock_open(int proto, int port);
-static void csock_close(struct ONESOCK *os);
 
 int csock_deb(const char *fmt, ... ) {
     int ret = 0;
@@ -133,6 +132,11 @@ int csock_broadcast(void *lib_data, char *buf, int len) {
 	return ret;
 }
 
+int csock_write(void *ptr, char *buf, int len) {
+	struct ONESOCK *os = (struct ONESOCK *)ptr;
+	int ret = write(os->fd, buf, len);
+	return ret;
+}
 
 static struct ONESOCK *alloc_sock(struct CSOCK *pc) {
 	int i;
@@ -175,8 +179,9 @@ static int csock_open(int proto, int port) {
 	return ret;
 }
 
-static void csock_close(struct ONESOCK *os) {
-	csock_deb("EOS fd %d. close", os->fd );
+void csock_close(void *ptr) {
+	struct ONESOCK *os = (struct ONESOCK *)ptr;
+	csock_deb("close fd %d", os->fd );
 	close(os->fd);
 	os->fd = 0;
 	os->flags = 0;
@@ -245,9 +250,9 @@ static int csock_loop(void *ptr) {
 							csock_close(os);
 						}
 						else if(FD_ISSET(os->fd, &fd_read)) {
-							int ret = read(os->fd, os->buf, sizeof(os->buf));
+							int ret = read(os->fd, os->buf, MAX_BUF_LEN);
 							if(ret>0) {
-								pc->on_read(os->data, os->buf, ret);
+								pc->on_read(&os->data, os->buf, ret);
 							}
 							else {
 								csock_close(os);
