@@ -1,6 +1,6 @@
 PROJECT_ROOT = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
-OBJS = msock.o csocklib.o csocktrgt.o
+OBJS = msock.o csocklib.o csocktrgt.o base64.o sha1sum.o ws_server.o
 
 	CFLAGS += -g
 
